@@ -36,10 +36,15 @@ touchpadFavoriteTouched	(none)	The touchpad detected a touch on the FAVORITE tou
 touchpadFavoritePressed	(none)	The touchpad surface is clicked on the FAVORITE touch icon.
 """
 
+from goprohero import GoProHero
+
 
 class CommandControl:
 	def __init__(self):
 		self.name = "command-control"
+		self.camera = GoProHero(password='kesav123')
+		self.camera.command('power', 'on')
+		print(self.camera.status())
 
 	def log(self, message):
 		print("%s" % message)
@@ -51,7 +56,7 @@ class CommandControl:
 		self.log("Command: %s" % cmd)
 
 	def selectReleased(self, cmd=""):
-		self.log("Command: %s" % cmd)
+		self.camera.command('record', 'on')
 
 	def pushUpPressed(self, cmd=""):
 		self.log("Command: %s" % cmd)
