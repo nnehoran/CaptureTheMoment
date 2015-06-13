@@ -1,7 +1,3 @@
-import os
-import sys
-import logging
-
 """
 selectPressed	(none)	CCE pressed.
 selectReleased	(none)	CCE released.
@@ -42,118 +38,119 @@ touchpadFavoritePressed	(none)	The touchpad surface is clicked on the FAVORITE t
 
 
 class CommandControl:
-   def __init__(self):
-       self.name = "command-control"
+	def __init__(self):
+		self.name = "command-control"
 
-   def log(self, message):
-       print("%s" % message)
+	def log(self, message):
+		print("%s" % message)
 
-   # define all commands of rotary controller and touchpad
+	# define all commands of rotary controller and touchpad
 
-   # Rotary controller commands
-   def selectPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
-      
-   def selectReleased(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	# Rotary controller commands
+	def selectPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def pushUpPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def selectReleased(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def pushUpReleased(self, cmd=""):
-      self.log("Commansd: %s" % cmd)
+	def pushUpPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def pushRightPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def pushUpReleased(self, cmd=""):
+		self.log("Commansd: %s" % cmd)
 
-   def pushRightReleased(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def pushRightPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def pushDownPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def pushRightReleased(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def pushDownReleased(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def pushDownPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def pushRightPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def pushDownReleased(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def pushRightReleased(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def pushRightPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def cceRotate(self, cmd="", change=0):
-      self.log("Command: %s change: %s" % (cmd, change))
+	def pushRightReleased(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def cceBackPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def cceRotate(self, cmd="", change=0):
+		self.log("Command: %s change: %s" % (cmd, change))
 
-   def cceBackReleased(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def cceBackPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def favoritePressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def cceBackReleased(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def favoriteReleased(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def favoritePressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
+	def favoriteReleased(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   # Touchpad controls
+	# Touchpad controls
 
-   def touchpadAreaTouched(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def touchpadAreaTouched(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def touchpadAreaPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def touchpadAreaPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def swipeUp(self, cmd="", touches=1):
-      self.log("Command: %s touches:%d" % (cmd, touches))
+	def swipeUp(self, cmd="", touches=1):
+		self.log("Command: %s touches:%d" % (cmd, touches))
 
-   def swipeLeft(self, cmd="", touches=1):
-      self.log("Command: %s touches:%d" % (cmd, touches))
+	def swipeLeft(self, cmd="", touches=1):
+		self.log("Command: %s touches:%d" % (cmd, touches))
 
-   def swipeRight(self, cmd="", touches=1):
-      self.log("Command: %s touches:%d" % (cmd, touches))
+	def swipeRight(self, cmd="", touches=1):
+		self.log("Command: %s touches:%d" % (cmd, touches))
 
-   def swipeDown(self, cmd="", touches=1):
-      self.log("Command: %s touches:%d" % (cmd, touches))
+	def swipeDown(self, cmd="", touches=1):
+		self.log("Command: %s touches:%d" % (cmd, touches))
 
-   def touchHold(self, cmd="", touches=0):
-      self.log("Command: %s touches:%d" % (cmd, touches))
+	def touchHold(self, cmd="", touches=0):
+		self.log("Command: %s touches:%d" % (cmd, touches))
 
-   def touchRotate(self, cmd="", change=0):
-      self.log("Command: %s change: %d" % (cmd, change))
+	def touchRotate(self, cmd="", change=0):
+		self.log("Command: %s change: %d" % (cmd, change))
 
-   def touchZoom(self, cmd="", direction=0):
-      self.log("Command: %s" % cmd)
+	def touchZoom(self, cmd="", direction=0):
+		self.log("Command: %s" % cmd)
 
-   def touchAt(self, cmd="", touches=0, x=0, y=0):
-      self.log("Command: %s touches: %d x: %d y: %d" % (cmd, touches, x, y))
+	def touchAt(self, cmd="", touches=0, x=0, y=0):
+		self.log("Command: %s touches: %d x: %d y: %d" % (cmd, touches, x, y))
 
-   def touchpadBackTouched(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def touchpadBackTouched(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def touchpadBackPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def touchpadBackPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def touchpadMediaTouched(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def touchpadMediaTouched(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def touchpadMediaPressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def touchpadMediaPressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def touchpadFavoriteTouched(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def touchpadFavoriteTouched(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
-   def touchpadFavoritePressed(self, cmd=""):
-      self.log("Command: %s" % cmd)
+	def touchpadFavoritePressed(self, cmd=""):
+		self.log("Command: %s" % cmd)
 
 
 def test_command_control():
-   c = CommandControl()
-   c.selectPressed("selectPressed")
+	c = CommandControl()
+	c.selectPressed("selectPressed")
+
 
 def main():
-   test_command_control()
+	test_command_control()
+
 
 if __name__ == '__main__':
-   main()
+	main()
