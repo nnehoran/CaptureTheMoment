@@ -14,9 +14,9 @@ def query(url):
     json_string = urllib2.urlopen(url).read()
     return json.loads(json_string)
 
-# read the vehicle data from the simulator
-def readVehicleData():
-    url = 'http://172.31.99.2/vehicle'
+# read the vehicle data from the simulator (2, 3, 4, or 5)
+def readVehicleData(vehicle_num):
+    url = 'http://172.31.99.' + str(vehicle_num) + '/vehicle'
     return query(url)
 
 # returns the direction of the item at (lat,lon) from loction (my_lat,my_lon)
@@ -49,13 +49,13 @@ def main():
             cat += ','.join(row)
 
     while(True):
-        vd = readVehicleData()
+        vd = readVehicleData(3)
         lat = vd.get('GPS_Latitude')
         lon = vd.get('GPS_Longitude')
         ts = vd.get('Timestamp')
 
         # calculate the direction of travel
-        car_dir = getDirection(lat, lon, old_lat, old_lon)
+        car_dir = getDirection(old_lat, old_lon, lat, lon)
         old_lat = lat
         old_lon = lon
 
