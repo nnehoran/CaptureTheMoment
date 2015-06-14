@@ -19,6 +19,16 @@ ser.flushInput()
 ser.flushOutput()
 
 
+class AutomaticPhotoThread(threading.Thread):
+
+   def __init__(self, cmmds):
+        threading.Thread.__init__(self)
+        self.cmmds = cmmds
+
+   def run(self):
+       import auto_snap
+       auto_snap.main(self.cmmds)
+
 
 class InputThread(threading.Thread):
 
@@ -52,7 +62,9 @@ def main():
 	cmmds = commands.CommandControl()
 	inputThread = InputThread(cmmds)
 	inputThread.start()
-	cmmds.startDisplay()
+	autophotoThread = AutomaticPhotoThread(cmmds)
+	autophotoThread.start()
+        cmmds.startDisplay()
 
 
 if __name__ == '__main__':

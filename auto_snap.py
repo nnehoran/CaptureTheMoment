@@ -46,13 +46,13 @@ def snapPhoto(title, direction, lat, lon, timestamp):
 
 # , read the vehicle data, get calculate
 #potential photo opportunities, and snap the photos
-def main():
+def main(cmmds=None):
     global old_lat
     global old_lon
     global places
 
     # the search radius for potential photo targets
-    rad = 150
+    rad = 100
 
     #read the user category prefereneces
     cat = ""
@@ -88,6 +88,8 @@ def main():
 
             if not title in photos_snapped:
                 snapPhoto(title, photo_rel_dir, lat, lon, ts)
+                if cmmds != None:
+                   cmmds.quickphoto("quickphoto", title, photo_rel_dir)
                 break
 
         time.sleep(1)

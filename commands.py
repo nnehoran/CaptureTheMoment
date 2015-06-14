@@ -75,14 +75,24 @@ class DisplayThread(threading.Thread):
                font = cv2.FONT_HERSHEY_SIMPLEX
                copyframe = copy.copy(self.lastframe)
                cv2.putText(copyframe, "Photo taken", (32, 32), font, 1, (0, 255, 0), 2) 
+               if self.cmmds.photoplace != "":
+                  cv2.putText(copyframe, self.cmmds.photoplace, (32, 120), font, 1, (255, 0, 0), 2) 
+               if self.cmmds.cameraDirection != "":
+                  cv2.putText(copyframe, "Direction: %s" % self.cmmds.cameraDirection, (32, 160), font, 1, (255, 0, 0), 2) 
 	       cv2.imshow('frame', copyframe)
             else:
                copyframe = copy.copy(frame)
+               font = cv2.FONT_HERSHEY_SIMPLEX
                if self.cmmds.videoRecording:
                   cv2.circle(copyframe, (20,20), 10, (0,0,255), -1)
-                  #font = cv2.cv.InitFont(cv2.cv.CV_FONT_HERSHEY_SIMPLEX, 1, 1, 0, 3, 8)
-                  font = cv2.FONT_HERSHEY_SIMPLEX
                   cv2.putText(copyframe, "Recording", (32, 32), font, 1, (0, 0, 255), 2) 
+               else:
+                  if self.cmmds.rotationText != "":
+                     cv2.putText(copyframe, self.cmmds.rotationText, (32, 32), font, 1, (0, 255, 0), 2) 
+                  photomode = "mode: Photo"
+                  if self.cmmds.videomode:
+                     photomode = "mode: Video"
+                  cv2.putText(copyframe, photomode, (350, 32), font, 1, (0, 255, 0), 2) 
 	       cv2.imshow('frame', copyframe)
             #print "image showed"
 
@@ -142,8 +152,48 @@ class CommandThread(threading.Thread):
      def __init__(self, cmmds):
         threading.Thread.__init__(self)
         self.cmmds = cmmds
+        self.rpc1 = zerorpc.Client()
+        #self.rpc1.connect("tcp://127.0.0.1:4242")
+        self.rpc1.connect("tcp://172.31.99.76:4242")
 
      def run(self):
+        #self.test1()
+        #self.voicetest()
+        #self.testswipe()
+        self.testrotate()
+        #self.testquickphoto()
+
+     def testquickphoto(self):
+         import auto_snap
+         auto_snap.main(self.cmmds)
+
+     def testrotate(self):
+         self.cmmds.cceRotate("cceRotate", 1)
+         time.sleep(1)
+         self.cmmds.cceRotate("cceRotate", -1)
+
+     def testswipe(self):
+         self.cmmds.swipeRight("swipeRight")
+         time.sleep(1)
+         self.cmmds.swipeLeft("swipeLeft")
+
+     def voicetest(self):
+         import speech_recognition as sr
+         r = sr.Recognizer()
+         text = ""
+         while True:
+             with sr.Microphone() as source:                # use the default microphone as the audio source
+                audio = r.adjust_for_ambient_noise(source) # listen for 1 second to calibrate the energy threshold for ambient noise levels
+                audio = r.listen(source)                   # listen for the first phrase and extract it into audio data
+             try:
+               text = r.recognize(audio)
+             except:
+               pass
+             print "speech: ", text
+             if text == "take photo":
+	        self.cmmds.selectReleased("selectReleased")
+
+     def test1(self):
         self.cmmds.cceFavoriteReleased("cceFavoriteReleased")
 	self.cmmds.selectReleased("selectReleased")
         time.sleep(5)
@@ -163,6 +213,7 @@ class CommandControl:
                 self.videomode = False
                 self.videoRecording = False
                 self.takephoto = False
+                self.reset()
 
                 if self.cmode == "mbpro":
                    self.camera = cv2.VideoCapture(0)
@@ -171,8 +222,6 @@ class CommandControl:
 		   self.camera.command('power', 'on')
 		   print(self.camera.status())
 
-                self.rpc1 = zerorpc.Client()
-                self.rpc1.connect("tcp://127.0.0.1:4242")
 
         def startDisplay(self):
                 # start the display thread
@@ -181,6 +230,11 @@ class CommandControl:
  
 	def log(self, message):
 		print("%s" % message)
+
+        def reset(self):
+                self.photoplace  = ""
+                self.cameraDirection = ""
+                self.rotationText = ""
 
         def get_position(self):
             import auto_snap
@@ -232,6 +286,12 @@ class CommandControl:
 
 	def cceRotate(self, cmd="", change=0):
 		self.log("Command: %s change: %s" % (cmd, change))
+                if change > 0:
+                   self.rotationText = "Rotate Clockwise"
+                else:
+                   self.rotationText = "Rotate CounterClockwise"
+                time.sleep(1)
+                self.reset()
 
 	def cceBackPressed(self, cmd=""):
 		self.log("Command: %s" % cmd)
@@ -260,11 +320,17 @@ class CommandControl:
 
 	def swipeLeft(self, cmd="", touches=1):
 		self.log("Command: %s touches:%d" % (cmd, touches))
-                self.rpc1.previous()
+                try:
+                  os.system("zerorpc tcp://127.0.0.1:4242 previous")
+                except:
+                  pass
 
 	def swipeRight(self, cmd="", touches=1):
 		self.log("Command: %s touches:%d" % (cmd, touches))
-                self.rpc1.next()
+                try:
+                  os.system("zerorpc tcp://127.0.0.1:4242 next")
+                except:
+                  pass
 
 	def swipeDown(self, cmd="", touches=1):
 		self.log("Command: %s touches:%d" % (cmd, touches))
@@ -299,15 +365,18 @@ class CommandControl:
 	def touchpadFavoritePressed(self, cmd=""):
 		self.log("Command: %s" % cmd)
 
-        def quickphoto(self, cmd=""):
+        def quickphoto(self, cmd="", place="", direction=""):
 		self.log("Command: %s" % cmd)
                 if self.videoRecording:
                    return
                 lastvideomode = self.videomode
                 self.videomode = False
                 self.takephoto = True
-                time.sleep(0.1)
+                self.photoplace = place
+                self.cameraDirection = direction
+                time.sleep(1)
                 self.videomode = lastvideomode
+                self.reset()
 
 def test_command_control():
 	c = CommandControl()
