@@ -35,17 +35,143 @@ touchpadMediaPressed	(none)	The touchpad surface is clicked on the MEDIA touch i
 touchpadFavoriteTouched	(none)	The touchpad detected a touch on the FAVORITE touch icon.
 touchpadFavoritePressed	(none)	The touchpad surface is clicked on the FAVORITE touch icon.
 """
+import os
+import sys
+import time
+import copy
+import threading
 
-from goprohero import GoProHero
+import cv2
 
+#from goprohero import GoProHero
+
+
+#class DisplayThread(threading.Thread):
+class DisplayThread(threading.Thread):
+
+     def __init__(self, cmmds):
+        #threading.Thread.__init__(self)
+        self.cmmds = cmmds
+        self.lastvideoRecording = False
+        self.lasttakephoto = False
+        self.phototime = 0
+        self.lastframe = None
+        if not os.path.exists("images"):
+           os.makedirs("images")
+        if not os.path.exists("videos"):
+           os.makedirs("videos")
+
+     def run(self):
+
+	while(True):
+	    # Capture frame-by-frame
+	    ret, frame = self.cmmds.camera.read()
+            #print "image read"
+            #cv2.imwrite("junk.jpg", frame)
+
+	    # Display the resulting frame
+            if self.cmmds.takephoto and self.lastframe != None:
+               font = cv2.FONT_HERSHEY_SIMPLEX
+               copyframe = copy.copy(self.lastframe)
+               cv2.putText(copyframe, "Photo taken", (32, 32), font, 1, (0, 255, 0), 2) 
+	       cv2.imshow('frame', copyframe)
+            else:
+               copyframe = copy.copy(frame)
+               if self.cmmds.videoRecording:
+                  cv2.circle(copyframe, (20,20), 10, (0,0,255), -1)
+                  #font = cv2.cv.InitFont(cv2.cv.CV_FONT_HERSHEY_SIMPLEX, 1, 1, 0, 3, 8)
+                  font = cv2.FONT_HERSHEY_SIMPLEX
+                  cv2.putText(copyframe, "Recording", (32, 32), font, 1, (0, 0, 255), 2) 
+	       cv2.imshow('frame', copyframe)
+            #print "image showed"
+
+            #print "videomode: %s, videorecording: %s, lastvideoRecording: %s" % \
+            #      (self.cmmds.videomode, self.cmmds.videoRecording, self.lastvideoRecording)
+            #print "takephoto: %s, lasttakephoto:%s" % (self.cmmds.takephoto, self.lasttakephoto)
+            ts = time.strftime("%d-%m-%Y-%H-%M-%S")
+           
+            # Take the photo 
+            if self.lasttakephoto == False and self.cmmds.takephoto:
+               print "taking photo at %s" % ts
+               fname = "images/%s.jpg" % ts
+               cv2.imwrite(fname, frame)
+               #self.cmmds.takephoto = False
+               self.phototime = time.time() 
+               self.lastframe = frame
+
+            # Display the same photo for some time 
+            if self.lasttakephoto and self.cmmds.takephoto:
+               t1 = time.time()
+               #print "photo_time:%f current_time: %f" % (self.phototime, t1)
+               if (t1 - self.phototime) > 1:
+                  self.cmmds.takephoto = False
+
+            # video starting
+            if self.lastvideoRecording == False and self.cmmds.videoRecording:
+               print "starting video at %s" % ts
+               fname = "videos/%s.mov" % ts
+               fourcc = cv2.cv.CV_FOURCC(*'mp4v')
+               w=int(self.cmmds.camera.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH ))
+               h=int(self.cmmds.camera.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT ))
+               videof = cv2.VideoWriter(fname, fourcc, 20.0, (w,h))
+               videof.write(frame)
+           
+            # video running
+            if self.lastvideoRecording and self.cmmds.videoRecording:
+               videof.write(frame)
+                
+            # video ending
+            if self.lastvideoRecording and self.cmmds.videoRecording == False:
+               print "ending video at %s" % ts
+               fname = "%s.avi" % ts
+               videof.write(frame)
+               videof.release()
+
+            self.lastvideoRecording = self.cmmds.videoRecording
+            self.lasttakephoto = self.cmmds.takephoto
+
+	    if cv2.waitKey(1) & 0xFF == ord('q'):
+		break
+
+class CommandThread(threading.Thread):
+
+     def __init__(self, cmmds):
+        threading.Thread.__init__(self)
+        self.cmmds = cmmds
+
+     def run(self):
+        self.cmmds.cceFavoriteReleased("cceFavoriteReleased")
+	self.cmmds.selectReleased("selectReleased")
+        time.sleep(5)
+        i = 0
+        while True:
+             time.sleep(1.1)
+	     self.cmmds.selectReleased("selectReleased")
+             if (i%4 == 0):
+                self.cmmds.cceFavoriteReleased("cceFavoriteReleased")
+             i = i +1
+ 
 
 class CommandControl:
 	def __init__(self):
 		self.name = "command-control"
-		self.camera = GoProHero(password='kesav123')
-		self.camera.command('power', 'on')
-		print(self.camera.status())
+                self.cmode = "mbpro"
+                self.videomode = False
+                self.videoRecording = False
+                self.takephoto = False
 
+                if self.cmode == "mbpro":
+                   self.camera = cv2.VideoCapture(0)
+                else:
+		   self.camera = GoProHero(password='kesav123')
+		   self.camera.command('power', 'on')
+		   print(self.camera.status())
+
+        def startDisplay(self):
+                # start the display thread
+                self.displaythread = DisplayThread(self)
+                self.displaythread.run()
+ 
 	def log(self, message):
 		print("%s" % message)
 
@@ -56,8 +182,18 @@ class CommandControl:
 		self.log("Command: %s" % cmd)
 
 	def selectReleased(self, cmd=""):
-		self.camera.command('record', 'on')
+		self.log("Command: %s" % cmd)
 
+		if self.videomode:
+                   self.videoRecording = not self.videoRecording
+                else:
+                   self.takephoto = True
+
+                if self.cmode == "mbpro":
+                   pass
+                else:
+		   self.camera.command('record', 'on')
+                   
 	def pushUpPressed(self, cmd=""):
 		self.log("Command: %s" % cmd)
 
@@ -91,11 +227,13 @@ class CommandControl:
 	def cceBackReleased(self, cmd=""):
 		self.log("Command: %s" % cmd)
 
-	def favoritePressed(self, cmd=""):
+	def cceFavoritePressed(self, cmd=""):
 		self.log("Command: %s" % cmd)
 
-	def favoriteReleased(self, cmd=""):
+	def cceFavoriteReleased(self, cmd=""):
 		self.log("Command: %s" % cmd)
+		self.videomode = not self.videomode
+                self.videoRecording = False
 
 	# Touchpad controls
 
@@ -147,10 +285,21 @@ class CommandControl:
 	def touchpadFavoritePressed(self, cmd=""):
 		self.log("Command: %s" % cmd)
 
+        def quickphoto(self, cmd=""):
+		self.log("Command: %s" % cmd)
+                if self.videoRecording:
+                   return
+                lastvideomode = self.videomode
+                self.videomode = False
+                self.takephoto = True
+                time.sleep(0.1)
+                self.videomode = lastvideomode
 
 def test_command_control():
 	c = CommandControl()
-	c.selectPressed("selectPressed")
+        cthread = CommandThread(c)
+        cthread.start()
+        c.startDisplay()
 
 
 def main():
