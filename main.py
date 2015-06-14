@@ -11,6 +11,7 @@ import commands
 # Each test bench is labeled with the serial device name on the USB cable
 device_name = '/dev/cu.usbserial-FTF0F8FI'
 device_name = '/dev/cu.usbserial-FTGQCF2N'
+device_name = '/dev/cu.usbserial-FTGQJ7IM'
 baud_rate = 115200
 
 # Set up the serial port connection
@@ -27,8 +28,11 @@ class AutomaticPhotoThread(threading.Thread):
 
    def run(self):
        import auto_snap
-       auto_snap.main(self.cmmds)
-
+       try:
+          auto_snap.main(self.cmmds)
+       except:
+          pass
+          #print "error in auto photo taker"
 
 class InputThread(threading.Thread):
 

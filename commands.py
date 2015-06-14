@@ -92,7 +92,7 @@ class DisplayThread(threading.Thread):
                   photomode = "mode: Photo"
                   if self.cmmds.videomode:
                      photomode = "mode: Video"
-                  cv2.putText(copyframe, photomode, (350, 32), font, 1, (0, 255, 0), 2) 
+                  cv2.putText(copyframe, photomode, (500, 32), font, 1, (0, 255, 0), 2) 
 	       cv2.imshow('frame', copyframe)
             #print "image showed"
 
@@ -117,7 +117,7 @@ class DisplayThread(threading.Thread):
             if self.lasttakephoto and self.cmmds.takephoto:
                t1 = time.time()
                #print "photo_time:%f current_time: %f" % (self.phototime, t1)
-               if (t1 - self.phototime) > 1:
+               if (t1 - self.phototime) > 2:
                   self.cmmds.takephoto = False
 
             # video starting
@@ -157,10 +157,10 @@ class CommandThread(threading.Thread):
         self.rpc1.connect("tcp://172.31.99.76:4242")
 
      def run(self):
-        #self.test1()
+        self.test1()
         #self.voicetest()
         #self.testswipe()
-        self.testrotate()
+        #self.testrotate()
         #self.testquickphoto()
 
      def testquickphoto(self):
@@ -194,9 +194,11 @@ class CommandThread(threading.Thread):
 	        self.cmmds.selectReleased("selectReleased")
 
      def test1(self):
+        time.sleep(2)
         self.cmmds.cceFavoriteReleased("cceFavoriteReleased")
 	self.cmmds.selectReleased("selectReleased")
         time.sleep(5)
+        self.cmmds.touchpadFavoritePressed("touchpadFavoritePressed")
         i = 0
         while True:
              time.sleep(1.1)
@@ -222,6 +224,11 @@ class CommandControl:
 		   self.camera.command('power', 'on')
 		   print(self.camera.status())
 
+        def switchWindow(self, appname):
+                try:
+                   os.system("osascript -e 'tell application \"%s\" to activate'" % appname)
+                except:
+                   pass
 
         def startDisplay(self):
                 # start the display thread
@@ -306,6 +313,7 @@ class CommandControl:
 		self.log("Command: %s" % cmd)
 		self.videomode = not self.videomode
                 self.videoRecording = False
+                self.switchWindow("python")
 
 	# Touchpad controls
 
@@ -364,6 +372,7 @@ class CommandControl:
 
 	def touchpadFavoritePressed(self, cmd=""):
 		self.log("Command: %s" % cmd)
+                self.switchWindow("electron")
 
         def quickphoto(self, cmd="", place="", direction=""):
 		self.log("Command: %s" % cmd)
@@ -374,7 +383,7 @@ class CommandControl:
                 self.takephoto = True
                 self.photoplace = place
                 self.cameraDirection = direction
-                time.sleep(1)
+                time.sleep(2)
                 self.videomode = lastvideomode
                 self.reset()
 
