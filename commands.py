@@ -40,6 +40,7 @@ import sys
 import time
 import copy
 import threading
+import zerorpc
 
 import cv2
 
@@ -94,6 +95,9 @@ class DisplayThread(threading.Thread):
             if self.lasttakephoto == False and self.cmmds.takephoto:
                print "taking photo at %s" % ts
                fname = "images/%s.jpg" % ts
+               lt, ln = self.cmmds.get_position()   
+               font = cv2.FONT_HERSHEY_SIMPLEX
+               cv2.putText(frame, "%s %s" % (lt, ln), (32, 70), font, 1, (171, 222, 255), 2) 
                cv2.imwrite(fname, frame)
                #self.cmmds.takephoto = False
                self.phototime = time.time() 
@@ -167,6 +171,9 @@ class CommandControl:
 		   self.camera.command('power', 'on')
 		   print(self.camera.status())
 
+                self.rpc1 = zerorpc.Client()
+                self.rpc1.connect("tcp://127.0.0.1:4242")
+
         def startDisplay(self):
                 # start the display thread
                 self.displaythread = DisplayThread(self)
@@ -174,6 +181,11 @@ class CommandControl:
  
 	def log(self, message):
 		print("%s" % message)
+
+        def get_position(self):
+            import auto_snap
+            data = auto_snap.readVehicleData(2)
+            return (data['GPS_Latitude'], data['GPS_Longitude'])
 
 	# define all commands of rotary controller and touchpad
 
@@ -248,9 +260,11 @@ class CommandControl:
 
 	def swipeLeft(self, cmd="", touches=1):
 		self.log("Command: %s touches:%d" % (cmd, touches))
+                self.rpc1.previous()
 
 	def swipeRight(self, cmd="", touches=1):
 		self.log("Command: %s touches:%d" % (cmd, touches))
+                self.rpc1.next()
 
 	def swipeDown(self, cmd="", touches=1):
 		self.log("Command: %s touches:%d" % (cmd, touches))
