@@ -1,1 +1,1 @@
-sights-museums,natural-geographical,landmark-attraction,museum,leisure-outdoor,recreation,body-of-water,mountain-hill,forest-heath-vegetation
+sights-museums,natural-geographical,landmark-attraction,museum,leisure-outdoor,recreation,body-of-water,mountain-hill,forest-heath-vegetation,going-out,theatre-music-culture,mall,religious-place,amusement-holiday-park,building
