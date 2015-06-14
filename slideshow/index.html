@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Slide Show</title>
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css"/>
+	<link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap-theme.min.css"/>
+
+	<script>
+		window.$ = window.jQuery = require('bower_components/jquery/dist/jquery.min.js');
+	</script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+	<p></p>
+
+	<div id="myCarousel" class="carousel slide" data-ride="carousel">
+		<ol class="carousel-indicators">
+		</ol>
+
+		<!-- Wrapper for slides -->
+		<div class="carousel-inner" role="listbox">
+		</div>
+
+		<!-- Left and right controls -->
+		<a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+			<span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+			<span class="sr-only">Previous</span>
+		</a>
+		<a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+			<span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+			<span class="sr-only">Next</span>
+		</a>
+	</div>
+</div>
+
+<script>
+	'use strict';
+	var ipc = require('ipc');
+	ipc.on('cmd', function (cmd) {
+		console.log(cmd);
+	});
+	ipc.on('darawCarousal', function () {
+		darawCarousal();
+	});
+	var glob = require('glob');
+
+	function darawCarousal() {
+		//Reset carousal
+		$('#myCarousel > ol.carousel-indicators').empty();
+		$('#myCarousel > .carousel-inner').empty();
+		$("#myCarousel").carousel("pause").removeData();
+
+
+		glob('images/*.jpg', function (err, files) {
+			if (err) {
+				return;
+			}
+			files.forEach(function (file, indx) {
+				var ind = `<li data-target="#myCarousel" data-slide-to="${indx}" class="${indx == 0 ?
+					'active' :
+					''}"></li>`;
+				var item = `<div class="item ${indx == 0 ? 'active' : ''}">
+				<img src="${file}" class="img-thumbnail" alt="Chania"/>
+			</div>`;
+				$('#myCarousel > ol.carousel-indicators').append(ind);
+				$('#myCarousel > .carousel-inner').append(item);
+			});
+			$("#myCarousel").carousel();
+		});
+	}
+</script>
+</body>
+</html>

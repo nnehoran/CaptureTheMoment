@@ -1,0 +1,14 @@
+{
+  "name": "capturemoment",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "author": "",
+  "devDependencies": {
+    "electron-rebuild": "^0.2.2"
+  },
+  "dependencies": {
+    "watch": "^0.16.0",
+    "zerorpc": "^0.9.5"
+  }
+}
