@@ -2,8 +2,8 @@ import urllib2
 import json
 import csv
 
-app_id = '6FKzHJURtpUBesE9M9Nr'
-app_code = 'tKQv3soSelCweFMxakZNkg'
+app_id = 'As1AGESV4Qio_HDgNw9U'
+app_code = 'N4_fgYJCwnzTPt2MGmRS8A'
 base_url = 'http://places.cit.api.here.com/places/v1/discover/around'
 latitude = 40.74917
 longitude = -73.98529
